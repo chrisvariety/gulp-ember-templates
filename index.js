@@ -14,13 +14,22 @@ function compile(templatePrefix) {
       return cb();
     }
 
-    var compilerOutput = compiler.precompile(file.contents.toString());
+    var compilerOutput;
 
-    if (file.isBuffer()) {
-      file.contents = new Buffer('define("' + templatePrefix + '/' + file.relative.replace('.hbs', '') + '", ["exports"], function (__exports__) { __exports__["default"] = Ember.Handlebars.template(' + compilerOutput.toString() + TEMPLATE_SUFFIX);
+    try {
+      compilerOutput = compiler.precompile(file.contents.toString());
+    } catch(e) {
+      this.emit('error', new gutil.PluginError(PLUGIN_NAME, e));
+      return cb();
     }
 
-    this.push(file);
+    if (compilerOutput) {
+      if (file.isBuffer()) {
+        file.contents = new Buffer('define("' + templatePrefix + '/' + file.relative.replace('.hbs', '') + '", ["exports"], function (__exports__) { __exports__["default"] = Ember.Handlebars.template(' + compilerOutput.toString() + TEMPLATE_SUFFIX);
+      }
+
+      this.push(file);
+    }
     return cb();
   });
 
