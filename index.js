@@ -4,10 +4,11 @@ var gutil = require('gulp-util');
 var PliginError = gutil.PliginError;
 
 const PLUGIN_NAME = 'gulp-ember-templates';
-const TEMPLATE_PREFIX = 'Ember.TEMPLATES["application"] = Ember.Handlebars.template(';
-const TEMPLATE_SUFFIX = ');';
+const TEMPLATE_SUFFIX = '); });';
 
-function compile() {
+function compile(templatePrefix) {
+  templatePrefix = templatePrefix || '';
+
   var stream = through.obj(function (file, enc, cb) {
     if (file.isNull()) {
       return cb();
@@ -16,7 +17,7 @@ function compile() {
     var compilerOutput = compiler.precompile(file.contents.toString());
 
     if (file.isBuffer()) {
-      file.contents = new Buffer(TEMPLATE_PREFIX + compilerOutput.toString() + TEMPLATE_SUFFIX);
+      file.contents = new Buffer('define("' + templatePrefix + '/' + file.relative.replace('.hbs', '') + '", ["exports"], function (__exports__) { __exports__["default"] = Ember.Handlebars.template(' + compilerOutput.toString() + TEMPLATE_SUFFIX);
     }
 
     this.push(file);
