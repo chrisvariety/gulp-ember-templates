@@ -45,10 +45,8 @@ var formats = {
     return prefix + compilerOutput.toString();
   },
   es6: function (compilerOutput, fileName, options) {
-    var prefix = 'export default function () { return ';
-    var suffix = ' };'
-
-    var compilerOutput = formats.browser(compilerOutput, fileName, options);
+    var prefix = 'define("' + options.moduleName + '/' + fileName + '", ["exports"], function (__exports__) { __exports__["default"] = Ember.Handlebars.template(';
+    var suffix = '); });';
 
     return prefix + compilerOutput.toString() + suffix;
   }
@@ -57,13 +55,13 @@ var formats = {
 function transformName (name, options, done) {
   var transformedName = name;
 
-  if (options.name) { 
+  if (options.name) {
     switch (typeof options.name)
     {
       case 'string':
         transformedName = options.name;
         break;
-        
+
       case 'object':
         transformedName = name.replace(options.name.replace, options.name.with);
         break;
@@ -83,7 +81,7 @@ function transformName (name, options, done) {
 
 function compileTemplate (fileContents, done) {
     var compilerOutput;
-        
+
     try {
       compilerOutput = compiler.precompile(fileContents);
     }
@@ -109,7 +107,7 @@ function compile(options) {
     var ext = path.extname(file.relative);
     var fileName = file.relative.slice(0, -ext.length);
     var self = this;
-    
+
     async.series([
       function (done) {
         transformName(fileName, options, done);
